@@ -1,3 +1,15 @@
+#!/bin/bash
+#SBATCH --partition=gpu            # Use the GPU partition
+#SBATCH --gpus=a100:1              # Request 1 A100 GPU
+#SBATCH --cpus-per-task=4          # Request 4 CPU cores
+#SBATCH --mem=80G                  # Request 80 GiB memory
+#SBATCH --time=24:00:00            # Set max runtime to 24 hours
+#SBATCH --job-name=llava_training  # Set a job name
+#SBATCH --output=~/llava_%x_%j.out # Standard output log file in home directory
+#SBATCH --error=~/llava_%x_%j.err  # Standard error log file in home directory
+
+source memorization/bin/activate
+cd project/PMC_curation_llava/lmms-finetune
 NUM_GPUS=1
 DISTRIBUTED_ARGS="
     --nnodes=1 \
@@ -8,10 +20,10 @@ DISTRIBUTED_ARGS="
 
 # arguments that are very likely to be changed
 # according to your own case
-MODEL_ID=llava-1.5-7b                                   # model id; pick on by running `python supported_models.py`
-TRAIN_DATA_PATH=./example_data/celeba_image_train.json  # path to the training data json file
+MODEL_ID=llava-onevision-7b-ov                                   # model id; pick on by running `python supported_models.py`
+TRAIN_DATA_PATH=/home/yf329/palmer_scratch/Data/interleaved_data_allimage.json  # path to the training data json file
 EVAL_DATA_PATH=./example_data/celeba_image_eval.json    # path to the evaluation data json file (optional)
-IMAGE_FOLDER=./example_data/images                      # path to the image root folder; if provided, the image paths in the json should be relative
+IMAGE_FOLDER=/home/yf329/palmer_scratch/Data/images/allfigures                     # path to the image root folder; if provided, the image paths in the json should be relative
 VIDEO_FOLDER=./example_data/videos                      # path to the video root folder; if provided, the video paths in the json should be relative
 NUM_FRAMES=8                                            # how many frames are sampled from each video
 
@@ -32,7 +44,7 @@ GRAD_ACCUM=1                                            # gradient accumulation 
 NUM_EPOCHS=5                                            # number of training epochs
 
 LR=2e-5                                                 # learning rate
-MODEL_MAX_LEN=1024                                       # maximum input length of the model
+MODEL_MAX_LEN=32768                                       # maximum input length of the model
 
 
 torchrun $DISTRIBUTED_ARGS train.py \
